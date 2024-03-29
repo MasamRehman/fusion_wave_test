@@ -1,0 +1,39 @@
+import 'package:get/get.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:fusionwave_test_masam/models/comment_model';
+class CommentController extends GetxController {
+  List<CommentModel> comments = [];
+  var isLoading = true.obs;
+  
+
+  @override
+  void onInit() {
+    super.onInit();
+    fetchComments();
+  }
+   deleteComment(CommentModel comment) {
+    comments.remove(comment); // Remove the comment from the list
+    update(); // Update the UI
+  }
+
+  void fetchComments() async {
+    try {
+      isLoading(true);
+      final response = await http.get(Uri.parse('https://jsonplaceholder.typicode.com/posts/1/comments'));
+      if (response.statusCode == 200) {
+        Iterable jsonResponse = json.decode(response.body);
+        List<CommentModel> fetchedComments = jsonResponse.map((comment) => CommentModel.fromJson(comment)).toList();
+        comments = fetchedComments; // Assign directly to the list
+      } else {
+        throw Exception('Failed to load comments');
+      }
+    } catch (e) {
+      print('Error: $e');
+    } finally {
+      isLoading(false);
+      update(); // Update the controller to reflect changes in the UI
+    }
+  }
+  
+}
